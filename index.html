@@ -29,55 +29,30 @@
 					<a href="javascript: void(0);" v-on:click="getPopup(video)">
 						<img :src="video.poster" alt="">
 						<h4 class="video-item-name">{{video.title}}</h4>
-						<!--<span class="video-item-price">Item price</span>-->
 					</a>
 				</li>
-			</ul>					
-			<!--<div class="getting-started">-->
-				<!--<h2 class="getting-started-headline">Getting started...</h2>-->
-				<!--<div class="getting-started-content">-->
-					<!--<div class="getting-started-requirements">-->
-						<!--<h5 class="getting-started-requirements-headline">Requirements</h5>-->
-						<!--<ul class="requirements-list">-->
-							<!--<li><a href="#">How to download and install MetaTask, and use <br> testnet Rinkeby...</a></li>-->
-							<!--<li><a href="#">How to create an account...</a></li>-->
-							<!--<li><a href="#">How to get test ether from rinkeby <br> (https://www.rinkeby.io/#faucet)...</a></li>-->
-						<!--</ul>-->
-					<!--</div>-->
-					<!--<div class="getting-started-using">-->
-						<!--<h5 class="getting-started-using-headline">Using the plugin</h5>-->
-						<!--<ul class="using-list">-->
-							<!--<li><a href="#">Description of how the plugin will recognize a movie when pressing "Play" on a movie trailer</a></li>-->
-							<!--<li><a href="#">Description of how to express gratitude by using the "Pay" service from the plugin</a></li>-->
-							<!---->
-						<!--</ul>-->
-					<!--</div>-->
-				<!--</div>-->
-			<!--</div>-->
+			</ul>
 		</main>
 	</div>							
-<div  class="popup"  v-if="popup.on" >
+<div class="popup" v-if="popup.on" >
 	<div v-on:click="popup.on = 0" class="popup-overlay"></div>
 	<div class="popup-inner">
 		<div v-if="existPluginVal">
-			<video v-init-video  controls>
-				<source  :src="popup.video.video" type="video/mp4"/>
+			<video v-init-video controls>
+				<source :src="popup.video.video" type="video/mp4"/>
 			</video>
-			<input  type="hidden" name="video_title" :value="popup.video.title">
+			<input type="hidden" name="video_title" :value="popup.video.title">
 		</div>
 		<div v-if="!existPluginVal">
 			<p class="main-headline">White Rabbit plugin not detected!</p>
 			<p class="main-headline">Download the plugin <a href="#">here</a></p>
 			<p class="main-headline">to express your gratitude as a fan!</p>
 		</div>
-
 	</div>
 </div>
 </div>
-
+	<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.34/dist/web3.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="js/app.js" ></script>
-
-
 </body>
 </html>

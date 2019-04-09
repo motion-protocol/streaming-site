@@ -51,14 +51,10 @@ var videos = [
     },
 ];
 
-
-
 Vue.directive('init-video', {
     bind: function(items) {
-
         var Video = {
             onPlay: function(e) {
-
                 var title = Video.getTitle(e.target);
                 Video.postMessage(title);
             },
@@ -70,19 +66,16 @@ Vue.directive('init-video', {
             },
             postMessage: function (title) {
                 console.log ('send')
-                window.dispatchEvent(new CustomEvent("wr-video-play", {detail: {
-                        title: title
-                    }}));
+                window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title: title}}));
             }
         };
 
+        console.log(items);
         items.onplay = Video.onPlay;
         items.onpause = Video.onPause;
         items.onloadedmetadata = Video.onPlay;
-
     }
 });
-
 
 var app = new Vue({
     el: '#app',
@@ -97,12 +90,15 @@ var app = new Vue({
     mounted: function () {
       this.eventExistPlugin();
       this.existPlugin();
+      this.initWeb3Provider();
     },
     methods: {
         getPopup : function (video) {
+            console.log(video)
             this.existPlugin();
             this.popup.video = video;
             this.popup.on = true;
+            this.existPluginVal = true;
         },
         existPlugin: function () {
             console.log ('existPlugin ?');
@@ -116,6 +112,26 @@ var app = new Vue({
                 else self.existPluginVal = false;
 
             } ,false);;
+        },
+        initWeb3Provider: function () {
+            window.addEventListener('load', async () => {
+                if (window.ethereum) {
+                    window.web3 = new Web3(ethereum);
+                    try {
+                        await ethereum.enable();
+                        //web3.eth.sendTransaction({/* ... */});
+                    } catch (error) {
+                    }
+                }
+                else if (window.web3) {
+                    window.web3 = new Web3(web3.currentProvider);
+                    console.log(window.web3)
+                    //web3.eth.sendTransaction({/* ... */});
+                }
+                else {
+                    console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+                }
+            });
         }
     }
 });
