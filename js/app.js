@@ -1,4 +1,4 @@
-var videos = [
+const videos = [
     {
         title: 'Superfast',
         video: './video/Superfast.mp4',
@@ -52,88 +52,117 @@ var videos = [
 ];
 
 Vue.directive('init-video', {
-    bind: function(items) {
-        var Video = {
-            onPlay: function(e) {
-                var title = Video.getTitle(e.target);
-                Video.postMessage(title);
-            },
-            onPause: function() {
-                console.log("The video paused");
-            },
-            getTitle: function (el) {
-                return el.nextSibling.nextElementSibling.value;
-            },
-            postMessage: function (title) {
-                console.log ('send')
-                window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title: title}}));
-            }
-        };
+  bind: function(items) {
+    var Video = {
+      onPlay: function(e) {
+        var title = Video.getTitle(e.target);
+        var poster = Video.getPoster(e.target);
+        Video.postMessage(title, poster);
+      },
+      onPause: function() {
+        console.log("The video paused");
+      },
+      getPoster: function (el) {
+        return el.nextSibling.nextSibling.nextElementSibling.value;
+      },
+      getTitle: function (el) {
+        return el.nextSibling.nextElementSibling.value;
+      },
+      postMessage: function (title, poster) {
+        console.log('sending customEvent', title, poster)
+        window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title: title, poster: poster }}));
+      }
+    };
 
-        console.log(items);
-        items.onplay = Video.onPlay;
-        items.onpause = Video.onPause;
-        items.onloadedmetadata = Video.onPlay;
-    }
+    items.onplay = Video.onPlay;
+    items.onpause = Video.onPause;
+    items.onloadedmetadata = Video.onPlay;
+  }
 });
+
+const ABI = [
+  "function tokenByIndex(uint256 index) public view returns (uint256)",
+  "function tokenURI(uint256 tokenId) external view returns (string memory)",
+  "function totalSupply() public view returns (uint256)"
+];
+
+const ADDRESS = "0x1864b231f4fd1baa9f334150900fb9af6103526c";
+
+const getWeb3Provider = async(web3) => {
+  if(web3) {
+    return new ethers.providers.Web3Provider(web3.currentProvider);
+  } else {
+    throw new Error('web3 not in scope');
+  }
+};
+
+const getContract = R.curry((abi, address, provider) => new ethers.Contract(address, abi, provider));
+const getVideoContract = getContract(ABI, ADDRESS);
+
+const getVideoUris = R.curry(async (contract) => {
+  const totalSupply   = await contract.totalSupply();
+  const indexes       = await R.times(contract.tokenByIndex ,totalSupply)
+  const movieIds      = R.map((id) => id.toNumber(), await Promise.all(indexes));
+  const allMovies     = R.map(id => contract.tokenURI(id), movieIds);
+  return await Promise.all(allMovies);
+});
+
+const createUiModel = (movieUris) => R.map((uri) => {
+  const parts = R.split('#', uri);
+  return ({
+    title: parts[1],
+    video: '',
+    poster: 'https://images-na.ssl-images-amazon.com/images/M/MV5BMjAxMTk0MTUxNV5BMl5BanBnXkFtZTgwNTY0MjAzODE@._V1_SX300.jpg'
+  });
+}, movieUris);
 
 var app = new Vue({
     el: '#app',
     data: {
       existPluginVal:false,
-      videos: videos,
+      videos: [],
       popup: {
           on:false,
           video:{}
-      }
+      },
+
     },
-    mounted: function () {
+    mounted: async function () {
       this.eventExistPlugin();
       this.existPlugin();
       this.initWeb3Provider();
     },
     methods: {
-        getPopup : function (video) {
-            console.log(video)
+        getPopup: function (video) {
             this.existPlugin();
             this.popup.video = video;
             this.popup.on = true;
             this.existPluginVal = true;
         },
         existPlugin: function () {
-            console.log ('existPlugin ?');
+            console.log ('whiterabbit plugin PING!');
             window.dispatchEvent(new CustomEvent("wr-exist-plugin",{q:'exist-plugin'}));
         },
         eventExistPlugin: function () {
-            var self = this;
-            window.addEventListener("wr-message", function (e) {
-                console.log ('yes exist Plugin!' , e.detail);
-                if (e.detail.sataus == 200) self.existPluginVal = true;
-                else self.existPluginVal = false;
-
-            } ,false);;
+          var self = this;
+          window.addEventListener("wr-message", function (e) {
+              console.log ('whiterabbit plugin PONG' , e.detail);
+              if (e.detail.sataus == 200) self.existPluginVal = true;
+              else self.existPluginVal = false;
+          } ,false);
         },
-        initWeb3Provider: function () {
-            window.addEventListener('load', async () => {
-                if (window.ethereum) {
-                    window.web3 = new Web3(ethereum);
-                    try {
-                        await ethereum.enable();
-                        //web3.eth.sendTransaction({/* ... */});
-                    } catch (error) {
-                    }
-                }
-                else if (window.web3) {
-                    window.web3 = new Web3(web3.currentProvider);
-                    console.log(window.web3)
-                    //web3.eth.sendTransaction({/* ... */});
-                }
-                else {
-                    console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
-                }
-            });
+        initWeb3Provider: async function () {
+          window.addEventListener('load', async () => {
+            if (window.web3) {
+              const provider    = await getWeb3Provider(window.web3);
+              const contract    = await getVideoContract(provider)
+              const movieUris   = await getVideoUris(contract);
+              this.videos       = R.concat(this.videos, createUiModel(movieUris));
+            }
+            else {
+              console.error('Non-Ethereum browser detected. You should consider trying MetaMask!');
+            }
+          });
         }
     }
 });
-
-

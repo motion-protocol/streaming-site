@@ -14,7 +14,7 @@
 		<a href="/" class="icon-logo logo"></a>
 		<div class="social">
 			<ul class="social-list">
-				<li><a href="https://fb.me/WRJumpIn" class="icon-Facebook"></a></li>					
+				<li><a href="https://fb.me/WRJumpIn" class="icon-Facebook"></a></li>
 				<li><a href="https://twitter.com/WRJumpIn" class="icon-Twitter2"></a></li>
 				<li><a href="https://t.me/jumpin" class="icon-Telegram"></a></li>
 				<li><a href="https://medium.com/@JumpIn" class="icon-Medium"></a></li>
@@ -28,20 +28,21 @@
 				<li v-for="video in videos" class="video-list-item">
 					<a href="javascript: void(0);" v-on:click="getPopup(video)">
 						<img :src="video.poster" alt="">
-						<h4 class="video-item-name">{{video.title}}</h4>
+            <h4 class="video-item-name">{{video.title}}</h4>
 					</a>
 				</li>
 			</ul>
 		</main>
-	</div>							
+	</div>
 <div class="popup" v-if="popup.on" >
 	<div v-on:click="popup.on = 0" class="popup-overlay"></div>
 	<div class="popup-inner">
 		<div v-if="existPluginVal">
 			<video v-init-video controls>
 				<source :src="popup.video.video" type="video/mp4"/>
-			</video>
-			<input type="hidden" name="video_title" :value="popup.video.title">
+      </video>
+      <input type="hidden" name="video_title"   :value="popup.video.title">
+      <input type="hidden" name="video_poster"  :value="popup.video.poster">
 		</div>
 		<div v-if="!existPluginVal">
 			<p class="main-headline">White Rabbit plugin not detected!</p>
@@ -51,7 +52,8 @@
 	</div>
 </div>
 </div>
-	<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.34/dist/web3.js"></script>
+  <script src="js/ethers.js" ></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="js/app.js" ></script>
 </body>
