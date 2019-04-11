@@ -51,39 +51,11 @@ const videos = [
     },
 ];
 
-Vue.directive('init-video', {
-  bind: function(items) {
-    var Video = {
-      onPlay: function(e) {
-        var title = Video.getTitle(e.target);
-        var poster = Video.getPoster(e.target);
-        Video.postMessage(title, poster);
-      },
-      onPause: function() {
-        console.log("The video paused");
-      },
-      getPoster: function (el) {
-        return el.nextSibling.nextSibling.nextElementSibling.value;
-      },
-      getTitle: function (el) {
-        return el.nextSibling.nextElementSibling.value;
-      },
-      postMessage: function (title, poster) {
-        console.log('sending customEvent', title, poster)
-        window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title: title, poster: poster }}));
-      }
-    };
-
-    items.onplay = Video.onPlay;
-    items.onpause = Video.onPause;
-    items.onloadedmetadata = Video.onPlay;
-  }
-});
-
 const ABI = [
   "function tokenByIndex(uint256 index) public view returns (uint256)",
   "function tokenURI(uint256 tokenId) external view returns (string memory)",
-  "function totalSupply() public view returns (uint256)"
+  "function totalSupply() public view returns (uint256)",
+  "function ownerOf(uint256 tokenId) public view returns (address owner)"
 ];
 
 const ADDRESS = "0x1864b231f4fd1baa9f334150900fb9af6103526c";
@@ -92,29 +64,71 @@ const getWeb3Provider = async(web3) => {
   if(web3) {
     return new ethers.providers.Web3Provider(web3.currentProvider);
   } else {
-    throw new Error('web3 not in scope');
+    throw new Error('Non-Ethereum browser detected. You should consider trying MetaMask!');
   }
 };
 
 const getContract = R.curry((abi, address, provider) => new ethers.Contract(address, abi, provider));
 const getVideoContract = getContract(ABI, ADDRESS);
 
-const getVideoUris = R.curry(async (contract) => {
+const getVideos = R.curry(async (contract) => {
   const totalSupply   = await contract.totalSupply();
   const indexes       = await R.times(contract.tokenByIndex ,totalSupply)
   const movieIds      = R.map((id) => id.toNumber(), await Promise.all(indexes));
-  const allMovies     = R.map(id => contract.tokenURI(id), movieIds);
+
+  const allMovies     = await R.map(async(tokenId) => {
+    const uri   = await contract.tokenURI(tokenId);
+    const owner = await contract.ownerOf(tokenId);
+    return { uri, owner, tokenId };
+  }, movieIds);
+
   return await Promise.all(allMovies);
 });
 
-const createUiModel = (movieUris) => R.map((uri) => {
-  const parts = R.split('#', uri);
+const createUiModel = (movies) => R.map((movie) => {
+  console.log(movie);
+  const parts = R.split('#', movie.uri);
   return ({
+    owner: movie.owner,
+    tokenid: movie.tokenId,
     title: parts[1],
-    video: '',
+    video: './video/Night Train To Lisbon.mp4',
     poster: 'https://images-na.ssl-images-amazon.com/images/M/MV5BMjAxMTk0MTUxNV5BMl5BanBnXkFtZTgwNTY0MjAzODE@._V1_SX300.jpg'
   });
-}, movieUris);
+}, movies);
+
+Vue.directive('init-video', {
+  bind: function(items) {
+    var Video = {
+      onPlay: function(e) {
+        const siblings = Video.getSiblings(e.target);
+        const [title, poster, owner, tokenId] = siblings;
+        Video.postMessage({title, poster, owner, tokenId});
+      },
+      getSiblings: function (elem) {
+        var siblings = [];
+        var sibling = elem.parentNode.firstChild;
+        while (sibling) {
+          if (sibling.nodeType === 1 && sibling !== elem) {
+            siblings.push(sibling);
+          }
+          sibling = sibling.nextSibling
+        }
+        return R.map(sibling => sibling.value, siblings);
+      },
+      onPause: function() {
+        console.log("The video paused");
+      },
+      postMessage: function ({title, poster, owner, tokenId}) {
+        console.log('sending customEvent', title, poster, owner, tokenId)
+        window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
+      }
+    };
+    items.onplay = Video.onPlay;
+    items.onpause = Video.onPause;
+    items.onloadedmetadata = Video.onPlay;
+  }
+});
 
 var app = new Vue({
     el: '#app',
@@ -122,8 +136,8 @@ var app = new Vue({
       existPluginVal:false,
       videos: [],
       popup: {
-          on:false,
-          video:{}
+        on:false,
+        video:{}
       },
 
     },
@@ -133,36 +147,35 @@ var app = new Vue({
       this.initWeb3Provider();
     },
     methods: {
-        getPopup: function (video) {
-            this.existPlugin();
-            this.popup.video = video;
-            this.popup.on = true;
-            this.existPluginVal = true;
-        },
-        existPlugin: function () {
-            console.log ('whiterabbit plugin PING!');
-            window.dispatchEvent(new CustomEvent("wr-exist-plugin",{q:'exist-plugin'}));
-        },
-        eventExistPlugin: function () {
-          var self = this;
-          window.addEventListener("wr-message", function (e) {
-              console.log ('whiterabbit plugin PONG' , e.detail);
-              if (e.detail.sataus == 200) self.existPluginVal = true;
-              else self.existPluginVal = false;
-          } ,false);
-        },
-        initWeb3Provider: async function () {
-          window.addEventListener('load', async () => {
-            if (window.web3) {
-              const provider    = await getWeb3Provider(window.web3);
-              const contract    = await getVideoContract(provider)
-              const movieUris   = await getVideoUris(contract);
-              this.videos       = R.concat(this.videos, createUiModel(movieUris));
-            }
-            else {
-              console.error('Non-Ethereum browser detected. You should consider trying MetaMask!');
-            }
-          });
-        }
+      getPopup: function (video) {
+        this.existPlugin();
+        this.popup.video = video;
+        this.popup.on = true;
+        this.existPluginVal = true;
+      },
+      existPlugin: function () {
+        console.log ('whiterabbit plugin PING!');
+        window.dispatchEvent(new CustomEvent("wr-exist-plugin",{q:'exist-plugin'}));
+      },
+      eventExistPlugin: function () {
+        var self = this;
+        window.addEventListener("wr-message", function (e) {
+          console.log ('whiterabbit plugin PONG' , e.detail);
+          if (e.detail.sataus == 200) self.existPluginVal = true;
+          else self.existPluginVal = false;
+        } ,false);
+      },
+      initWeb3Provider: async function () {
+        window.addEventListener('load', async () => {
+          try {
+            const provider    = await getWeb3Provider(window.web3);
+            const contract    = await getVideoContract(provider)
+            const movies      = await getVideos(contract);
+            this.videos       = R.concat(this.videos, createUiModel(movies));
+          } catch (error) {
+            console.error(error.stack);
+          }
+        });
+      }
     }
 });
