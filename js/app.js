@@ -51,6 +51,9 @@ const videos = [
     },
 ];
 
+
+const {map, curry, times, split, concat} = R;
+
 const ABI = [
   "function tokenByIndex(uint256 index) public view returns (uint256)",
   "function tokenURI(uint256 tokenId) external view returns (string memory)",
@@ -58,7 +61,8 @@ const ABI = [
   "function ownerOf(uint256 tokenId) public view returns (address owner)"
 ];
 
-const ADDRESS = "0x1864b231f4fd1baa9f334150900fb9af6103526c";
+const GOERLI_ADDRESS  = '0x1864b231f4fd1baa9f334150900fb9af6103526c';
+const RINKEBY_ADDRESS = '0xaa5809214239995d873f9d742351cecb4dafad30';
 
 const getWeb3Provider = async(web3) => {
   if(web3) {
@@ -68,15 +72,17 @@ const getWeb3Provider = async(web3) => {
   }
 };
 
-const getContract = R.curry((abi, address, provider) => new ethers.Contract(address, abi, provider));
-const getVideoContract = getContract(ABI, ADDRESS);
+const getContract = curry((abi, address, provider) => new ethers.Contract(address, abi, provider));
 
-const getVideos = R.curry(async (contract) => {
+const getVideoGoerliContract  = getContract(ABI, GOERLI_ADDRESS);
+const getVideoRinkebyContract = getContract(ABI, RINKEBY_ADDRESS);
+
+const getVideos = curry(async (contract) => {
   const totalSupply   = await contract.totalSupply();
-  const indexes       = await R.times(contract.tokenByIndex ,totalSupply)
-  const movieIds      = R.map((id) => id.toNumber(), await Promise.all(indexes));
+  const indexes       = await times(contract.tokenByIndex ,totalSupply)
+  const movieIds      = map((id) => id.toNumber(), await Promise.all(indexes));
 
-  const allMovies     = await R.map(async(tokenId) => {
+  const allMovies     = await map(async(tokenId) => {
     const uri   = await contract.tokenURI(tokenId);
     const owner = await contract.ownerOf(tokenId);
     return { uri, owner, tokenId };
@@ -88,7 +94,7 @@ const getVideos = R.curry(async (contract) => {
 // TODO: whiterabbit needs to upload all the data related to an movie , poster, video
 const createUiModel = (movies) => R.map((movie) => {
   console.log(movie);
-  const parts = R.split('#', movie.uri);
+  const parts = split('#', movie.uri);
   return ({
     owner: movie.owner,
     tokenid: movie.tokenId,
@@ -115,7 +121,7 @@ Vue.directive('init-video', {
           }
           sibling = sibling.nextSibling
         }
-        return R.map(sibling => sibling.value, siblings);
+        return map(sibling => sibling.value, siblings);
       },
       onPause: function() {
         console.log("The video paused");
@@ -170,9 +176,10 @@ var app = new Vue({
         window.addEventListener('load', async () => {
           try {
             const provider    = await getWeb3Provider(window.web3);
-            const contract    = await getVideoContract(provider)
+            const {name}      = await provider.getNetwork()
+            const contract    = name === 'goerli' ? await getVideoGoerliContract(provider) : await getVideoRinkebyContract(provider);
             const movies      = await getVideos(contract);
-            this.videos       = R.concat(this.videos, createUiModel(movies));
+            this.videos       = concat(this.videos, createUiModel(movies));
           } catch (error) {
             console.error(error.stack);
           }
