@@ -1,4 +1,4 @@
-const videos = [
+  const videos = [
     {
         title: 'Superfast',
         video: './video/Superfast.mp4',
@@ -61,8 +61,9 @@ const ABI = [
   "function ownerOf(uint256 tokenId) public view returns (address owner)"
 ];
 
-const GOERLI_ADDRESS  = '0x1864b231f4fd1baa9f334150900fb9af6103526c';
-const RINKEBY_ADDRESS = '0xaa5809214239995d873f9d742351cecb4dafad30';
+const GOERLI_ADDRESS    = '0x1864b231f4fd1baa9f334150900fb9af6103526c';
+const RINKEBY_ADDRESS   = '0xaa5809214239995d873f9d742351cecb4dafad30';
+const LOCALHOST_ADDRESS = ''; // UPDATE
 
 const getWeb3Provider = async(web3) => {
   if(web3) {
@@ -74,8 +75,9 @@ const getWeb3Provider = async(web3) => {
 
 const getContract = curry((abi, address, provider) => new ethers.Contract(address, abi, provider));
 
-const getVideoGoerliContract  = getContract(ABI, GOERLI_ADDRESS);
-const getVideoRinkebyContract = getContract(ABI, RINKEBY_ADDRESS);
+const getVideoGoerliContract    = getContract(ABI, GOERLI_ADDRESS);
+const getVideoRinkebyContract   = getContract(ABI, RINKEBY_ADDRESS);
+const getVideoLocalhostContract = getContract(ABI, LOCALHOST_ADDRESS);
 
 const getVideos = curry(async (contract) => {
   const totalSupply   = await contract.totalSupply();
@@ -90,6 +92,17 @@ const getVideos = curry(async (contract) => {
 
   return await Promise.all(allMovies);
 });
+
+const selectNetwork = async(provider) => {
+  const {name}      = await provider.getNetwork();
+  if(name === 'goerli') {
+    return await getVideoGoerliContract(provider);
+  } else if (name === 'rinkeby') {
+    return await getVideoRinkebyContract(provider);
+  } else {
+    return await getVideoLocalhostContract(provider);
+  }
+};
 
 // TODO: whiterabbit needs to upload all the data related to an movie , poster, video
 const createUiModel = (movies) => R.map((movie) => {
@@ -176,8 +189,7 @@ var app = new Vue({
         window.addEventListener('load', async () => {
           try {
             const provider    = await getWeb3Provider(window.web3);
-            const {name}      = await provider.getNetwork()
-            const contract    = name === 'goerli' ? await getVideoGoerliContract(provider) : await getVideoRinkebyContract(provider);
+            const contract    = await selectNetwork(provider);
             const movies      = await getVideos(contract);
             this.videos       = concat(this.videos, createUiModel(movies));
           } catch (error) {
