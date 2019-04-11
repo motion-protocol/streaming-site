@@ -85,6 +85,7 @@ const getVideos = R.curry(async (contract) => {
   return await Promise.all(allMovies);
 });
 
+// TODO: whiterabbit needs to upload all the data related to an movie , poster, video
 const createUiModel = (movies) => R.map((movie) => {
   console.log(movie);
   const parts = R.split('#', movie.uri);
