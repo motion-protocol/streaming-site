@@ -140,7 +140,7 @@ header .social-list a {
 	flex-direction: column;
 	-ms-align-items: center;
 	align-items: center;
-	
+
 	margin-bottom: 30px;
 }
 .video-list-item > a {
@@ -252,3 +252,6 @@ header.main-header {
 	width: 100%;
 }
 }
+
+
+.video-js.vjs-default-skin .vjs-big-play-button { display: none; }

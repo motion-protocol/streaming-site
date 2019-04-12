@@ -112,41 +112,30 @@ const createUiModel = (movies) => R.map((movie) => {
     owner: movie.owner,
     tokenid: movie.tokenId,
     title: parts[1],
-    video: './video/Night Train To Lisbon.mp4',
+    video: movie.uri,
     poster: 'https://images-na.ssl-images-amazon.com/images/M/MV5BMjAxMTk0MTUxNV5BMl5BanBnXkFtZTgwNTY0MjAzODE@._V1_SX300.jpg'
   });
 }, movies);
 
+const getSiblings = (elem) => {
+  var siblings = [];
+  var sibling = elem.parentNode.firstChild;
+  while (sibling) {
+    if (sibling.nodeType === 1 && sibling !== elem) {
+      siblings.push(sibling);
+    }
+    sibling = sibling.nextSibling
+  }
+  return map(sibling => sibling.value, siblings);
+};
+
 Vue.directive('init-video', {
-  bind: function(items) {
-    var Video = {
-      onPlay: function(e) {
-        const siblings = Video.getSiblings(e.target);
-        const [title, poster, owner, tokenId] = siblings;
-        Video.postMessage({title, poster, owner, tokenId});
-      },
-      getSiblings: function (elem) {
-        var siblings = [];
-        var sibling = elem.parentNode.firstChild;
-        while (sibling) {
-          if (sibling.nodeType === 1 && sibling !== elem) {
-            siblings.push(sibling);
-          }
-          sibling = sibling.nextSibling
-        }
-        return map(sibling => sibling.value, siblings);
-      },
-      onPause: function() {
-        console.log("The video paused");
-      },
-      postMessage: function ({title, poster, owner, tokenId}) {
-        console.log('sending customEvent', title, poster, owner, tokenId)
-        window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
-      }
-    };
-    items.onplay = Video.onPlay;
-    items.onpause = Video.onPause;
-    items.onloadedmetadata = Video.onPlay;
+  inserted: function(item) {
+    const siblings = getSiblings(item);
+    const [title, poster, owner, tokenId] = siblings;
+    console.log('sending customEvent', title, poster, owner, tokenId)
+    window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
+    videojs(document.getElementById(item.id)).play();
   }
 });
 
@@ -159,7 +148,6 @@ var app = new Vue({
         on:false,
         video:{}
       },
-
     },
     mounted: async function () {
       this.eventExistPlugin();
@@ -172,6 +160,9 @@ var app = new Vue({
         this.popup.video = video;
         this.popup.on = true;
         this.existPluginVal = true;
+      },
+      removePopup: function () {
+        this.popup.on = false;
       },
       existPlugin: function () {
         console.log ('whiterabbit plugin PING!');
