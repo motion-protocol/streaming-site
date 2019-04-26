@@ -1,10 +1,9 @@
 const {map, curry, times, split, concat} = R;
 
 const RINKEBY_ADDRESS   = '0xbf972fD0b929563407C249CBB00e33B4C83d49c3';
+const ipfs              = window.IpfsHttpClient('ipfs.infura.io', '5001', {protocol: 'https'});
 
 const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https://staging-testnet.leapdao.org/rpc');
-
-const ipfs = window.IpfsHttpClient('ipfs.infura.io', '5001', {protocol: 'https'});
 
 const getVideos = curry(async (provider) => {
   try {
@@ -38,18 +37,13 @@ const getMovieRepresentation = (provider, cid) => {
 };
 
 const convertToUint8Array = (inputAsHexString) => {
-  const result = [];
-
-  const noPrefix = inputAsHexString.slice(2);
-
-  const d2h = d => (+d).toString(16);
-
-  const ALGO = '12';
+  const result    = [];
+  const noPrefix  = inputAsHexString.slice(2);
+  const d2h       = d => (+d).toString(16);
+  const ALGO      = '12';
 
   const hexStringToByte = (str) => {
-    if (!str) {
-      return new Uint8Array();
-    }
+    if (!str) { return new Uint8Array(); }
     const a = [];
     for (let i = 0, len = str.length; i < len; i+=2) {
       a.push(parseInt(str.substr(i,2),16));
@@ -122,12 +116,12 @@ var app = new Vue({
         this.popup.on = false;
       },
       existPlugin: function () {
-        console.log ('whiterabbit plugin PING!');
+        console.log('whiterabbit plugin PING!');
         window.dispatchEvent(new CustomEvent("wr-exist-plugin",{q:'exist-plugin'}));
       },
       eventExistPlugin: function () {
         window.addEventListener("wr-message", (e) => {
-          console.log ('whiterabbit plugin PONG' , e.detail);
+          console.log('whiterabbit plugin PONG' , e.detail);
           if (e.detail.sataus == 200) this.existPluginVal = true;
           else this.existPluginVal = false;
         } ,false);
