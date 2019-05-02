@@ -34,13 +34,13 @@
 				</li>
 			</ul>
 		</main>
-	</div>
+  </div>
 <div class="popup" v-if="popup.on" >
 	<div v-on:click="removePopup(this)" class="popup-overlay"></div>
 	<div class="popup-inner">
 		<div v-if="existPluginVal">
-			<video v-bind:id="popup.video.tokenid" class='video-js vjs-default-skin vjs-fluid' v-init-video controls preload>
-        <source type="application/x-mpegURL" :src="popup.video.video" />
+			<video v-init-video controls autoplay>
+        <source type="video/mp4" :src="popup.video.video" />
       </video>
       <input type="hidden" name="video_title"   :value="popup.video.title">
       <input type="hidden" name="video_poster"  :value="popup.video.poster">

@@ -8,6 +8,7 @@ const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https:
 const getVideos = curry(async (provider) => {
   try {
     const unspents = await provider.send('plasma_unspent', ['', 49153]);
+    console.log("unspents: ", unspents);
     const result = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
@@ -64,7 +65,7 @@ const createUiModel = (movies) => R.map((movie) => {
     owner: movie.owner,
     tokenid: movie.tokenId,
     title: movie.name,
-    video: movie.movie.hls,
+    video: movie.movie.mp4,
     poster: movie.image
   });
 }, movies);
@@ -82,11 +83,19 @@ const getSiblings = (elem) => {
 };
 
 Vue.directive('init-video', {
-  inserted: function(item) {
-    const siblings = getSiblings(item);
-    const [title, poster, owner, tokenId] = siblings;
-    window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
-    videojs(document.getElementById(item.id)).play();
+  bind: function(item) {
+    const onPlay = (item) => {
+      const siblings = getSiblings(item.target);
+      const [title, poster, owner, tokenId] = siblings;
+      window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
+    };
+
+    item.onplay = onPlay;
+
+    setTimeout(() => {
+      console.log ('pause');
+      item.pause();
+    },2000)
   }
 });
 
@@ -107,6 +116,7 @@ var app = new Vue({
     },
     methods: {
       getPopup: function (video) {
+        console.log("video", video);
         this.existPlugin();
         this.popup.video = video;
         this.popup.on = true;
