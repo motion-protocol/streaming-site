@@ -91,6 +91,7 @@ Vue.directive('init-video', {
     };
 
     item.onplay = onPlay;
+    item.onloadedmetadata = onPlay;
 
     setTimeout(() => {
       console.log ('pause');
@@ -132,8 +133,18 @@ var app = new Vue({
       eventExistPlugin: function () {
         window.addEventListener("wr-message", (e) => {
           console.log('whiterabbit plugin PONG' , e.detail);
+
           if (e.detail.sataus == 200) this.existPluginVal = true;
           else this.existPluginVal = false;
+
+          if(e.detail.sataus == 200 && e.detail.wr_pay_movie != undefined) {
+            console.log('pay', e.detail.wr_pay_movie.title);
+            const input = document.querySelector('.popup-inner input[name="video_title"]');
+            if (input && input.value.toString().toLowerCase().includes( e.detail.wr_pay_movie.title.toLowerCase())) {
+              const video = document.querySelector('.popup-inner video');
+              if(video) video.play();
+            }
+         }
         } ,false);
       },
       initWeb3Provider: async function () {
