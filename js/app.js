@@ -140,7 +140,7 @@ var app = new Vue({
           if(e.detail.sataus == 200 && e.detail.wr_pay_movie != undefined) {
             console.log('pay', e.detail.wr_pay_movie.title);
             const input = document.querySelector('.popup-inner input[name="video_title"]');
-            if (input && input.value.toString().toLowerCase().includes( e.detail.wr_pay_movie.title.toLowerCase())) {
+            if (input && input.value.toString().length > 0) {
               const video = document.querySelector('.popup-inner video');
               if(video) video.play();
             }
