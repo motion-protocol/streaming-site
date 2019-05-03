@@ -5,14 +5,16 @@ const ipfs              = window.IpfsHttpClient('ipfs.infura.io', '5001', {proto
 
 const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https://staging-testnet.leapdao.org/rpc');
 
+const reflect = p => p.then(v => ({v, status: "fulfilled" }), e => ({e, status: "rejected" }));
+
 const getVideos = curry(async (provider) => {
   try {
-    const unspents = await provider.send('plasma_unspent', ['', 49153]);
-    console.log("unspents: ", unspents);
+    const unspents = await provider.send('plasma_unspent', ['', 49154]);
+
     const result = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
-      const content             = await JSON.parse((await getMovieRepresentation(ipfs, cid)));
+      const content             = await JSON.parse((await promiseTimeout(getMovieRepresentation(ipfs, cid))));
       const tokenId   = raw.output.value;
       const color     = raw.output.color;
       const owner     = raw.output.address;
@@ -22,11 +24,33 @@ const getVideos = curry(async (provider) => {
       return content;
     }, unspents);
 
-    return await Promise.all(result);
+    const results = await Promise.all(result.map(reflect));
+
+    const fulfilled = results.filter(x => x.status === "fulfilled");
+    return map(movie => movie.v, fulfilled);
+
   } catch (error) {
     console.error(error.stack);
   }
 });
+
+const promiseTimeout = (promise) => {
+  return new Promise(function(resolve, reject){
+    const timer = setTimeout(function(){
+      reject(new Error("promise timeout"));
+    }, 3000);
+
+    promise
+    .then((res) => {
+      clearTimeout(timer);
+      resolve(res);
+    })
+    .catch((err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+};
 
 const getMovieRepresentation = (provider, cid) => {
   return new Promise((resolve, reject) => {
@@ -59,6 +83,7 @@ const convertToUint8Array = (inputAsHexString) => {
   }
   return Uint8Array.from(result)
 };
+
 
 const createUiModel = (movies) => R.map((movie) => {
   return ({
@@ -152,6 +177,7 @@ var app = new Vue({
           try {
             const provider    = await getWeb3Provider();
             const movies      = await getVideos(provider);
+            console.log("movies: ", movies);
             this.videos       = concat(this.videos, createUiModel(movies));
           } catch (error) {
             console.error(error.stack);
