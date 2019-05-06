@@ -121,7 +121,7 @@ Vue.directive('init-video', {
     setTimeout(() => {
       console.log ('pause');
       item.pause();
-    },2000)
+    },7000)
   }
 });
 

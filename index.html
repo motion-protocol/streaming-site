@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Whiterabbit</title>
+	<title>K5 Partner Streaming Site</title>
 	<meta name="description" content="">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -12,7 +12,6 @@
 <body>
 <div id="app">
 	<header class="main-header">
-		<a href="/" class="icon-logo logo"></a>
 		<div class="social">
 			<ul class="social-list">
 				<li><a href="https://fb.me/WRJumpIn" class="icon-Facebook"></a></li>
@@ -24,7 +23,7 @@
 	</header>
 	<div class="container">
 		<main class="main-content">
-			<h1 class="main-headline">Jump in...</h1>
+			<h1 class="main-headline">K5 Partner Streaming Site</h1>
 			<ul class="video-list">
 				<li v-for="video in videos" class="video-list-item">
 					<a href="javascript: void(0);" v-on:click="getPopup(video)">
@@ -48,7 +47,7 @@
       <input type="hidden" name="video_tokenid" :value="popup.video.tokenid">
 		</div>
 		<div v-if="!existPluginVal">
-			<p class="main-headline">White Rabbit plugin not detected!</p>
+			<p class="main-headline">K5 Partner Streaming Site plugin not detected!</p>
 			<p class="main-headline">Download the plugin <a href="#">here</a></p>
 			<p class="main-headline">to express your gratitude as a fan!</p>
 		</div>
