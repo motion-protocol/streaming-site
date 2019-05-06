@@ -11,10 +11,10 @@ const getVideos = curry(async (provider) => {
   try {
     const unspents = await provider.send('plasma_unspent', ['', 49154]);
 
-    const result = await map(async(raw) => {
+    const tasks = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
-      const content             = await JSON.parse((await promiseTimeout(getMovieRepresentation(ipfs, cid))));
+      const content             = await promiseTimeout(getMovieRepresentation(cid));
       const tokenId   = raw.output.value;
       const color     = raw.output.color;
       const owner     = raw.output.address;
@@ -24,8 +24,7 @@ const getVideos = curry(async (provider) => {
       return content;
     }, unspents);
 
-    const results = await Promise.all(result.map(reflect));
-
+    const results = await Promise.all(tasks.map(reflect));
     const fulfilled = results.filter(x => x.status === "fulfilled");
     return map(movie => movie.v, fulfilled);
 
@@ -36,7 +35,7 @@ const getVideos = curry(async (provider) => {
 
 const promiseTimeout = (promise) => {
   return new Promise(function(resolve, reject){
-    const timer = setTimeout(function(){
+    const timer = setTimeout(() => {
       reject(new Error("promise timeout"));
     }, 3000);
 
@@ -52,12 +51,11 @@ const promiseTimeout = (promise) => {
   });
 };
 
-const getMovieRepresentation = (provider, cid) => {
-  return new Promise((resolve, reject) => {
-    provider.get(cid, (err, files) => {
-      if(err) { reject(err) };
-      resolve(files[0].content.toString('utf8'));
-    });
+const getMovieRepresentation = async(cid) => {
+  return new Promise(async(resolve, reject) => {
+    const response = await fetch('https://ipfs.infura.io/ipfs/' + cid);
+    const json = await response.json();
+    return resolve(json)
   });
 };
 
