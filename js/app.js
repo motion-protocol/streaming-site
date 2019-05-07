@@ -1,4 +1,4 @@
-const {map, curry, times, split, concat} = R;
+const {sort, map, curry, times, split, concat, compose} = R;
 
 const RINKEBY_ADDRESS   = '0xbf972fD0b929563407C249CBB00e33B4C83d49c3';
 
@@ -18,9 +18,11 @@ const getVideos = curry(async (provider) => {
       const tokenId   = raw.output.value;
       const color     = raw.output.color;
       const owner     = raw.output.address;
+      const created   = raw.output.created || Math.floor(371264461 / 1000);
       content.tokenId = tokenId;
       content.color   = color;
       content.owner   = owner;
+      content.created = created;
       return content;
     }, unspents);
 
@@ -83,15 +85,20 @@ const convertToUint8Array = (inputAsHexString) => {
 };
 
 
-const createUiModel = (movies) => R.map((movie) => {
+const propSelector = (movies) => map((movie) => {
   return ({
     owner: movie.owner,
     tokenid: movie.tokenId,
     title: movie.name,
     video: movie.movie.mp4,
-    poster: movie.image
+    poster: movie.image,
+    created: movie.created
   });
 }, movies);
+
+const sortMovies = sort((a,b) => b - a);
+
+const createUiModel = compose(sortMovies, propSelector);
 
 const getSiblings = (elem) => {
   var siblings = [];
@@ -156,7 +163,6 @@ var app = new Vue({
       eventExistPlugin: function () {
         window.addEventListener("wr-message", (e) => {
           console.log('whiterabbit plugin PONG' , e.detail);
-
           if (e.detail.sataus == 200) this.existPluginVal = true;
           else this.existPluginVal = false;
 
@@ -167,7 +173,7 @@ var app = new Vue({
               const video = document.querySelector('.popup-inner video');
               if(video) video.play();
             }
-         }
+          }
         } ,false);
       },
       initWeb3Provider: async function () {
