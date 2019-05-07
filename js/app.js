@@ -1,7 +1,6 @@
 const {map, curry, times, split, concat} = R;
 
 const RINKEBY_ADDRESS   = '0xbf972fD0b929563407C249CBB00e33B4C83d49c3';
-const ipfs              = window.IpfsHttpClient('ipfs.infura.io', '5001', {protocol: 'https'});
 
 const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https://staging-testnet.leapdao.org/rpc');
 
@@ -14,6 +13,7 @@ const getVideos = curry(async (provider) => {
     const tasks = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
+      console.log(unencodedIpfsHash, cid);
       const content             = await promiseTimeout(getMovieRepresentation(cid));
       const tokenId   = raw.output.value;
       const color     = raw.output.color;
