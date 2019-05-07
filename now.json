@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "whiterabbit",
+  "name": "k5-streaming",
   "public": true,
-  "alias": "whiterabbit.now.sh"
+  "alias": "k5-streaming.now.sh"
 }
