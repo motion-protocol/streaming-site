@@ -1,4 +1,4 @@
-const {sort, map, curry, times, split, concat, compose} = R;
+const {sort, map, curry, times, split, concat, compose, filter} = R;
 
 const RINKEBY_ADDRESS   = '0xbf972fD0b929563407C249CBB00e33B4C83d49c3';
 
@@ -9,20 +9,21 @@ const reflect = p => p.then(v => ({v, status: "fulfilled" }), e => ({e, status: 
 const getVideos = curry(async (provider) => {
   try {
     const unspents = await provider.send('plasma_unspent', ['', 49154]);
+    console.log(unspents);
+
 
     const tasks = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
       console.log(unencodedIpfsHash, cid);
-      const content             = await promiseTimeout(getMovieRepresentation(cid));
+      const content   = await promiseTimeout(getMovieRepresentation(cid));
       const tokenId   = raw.output.value;
       const color     = raw.output.color;
       const owner     = raw.output.address;
-      const created   = raw.output.created || Math.floor(371264461 / 1000);
       content.tokenId = tokenId;
       content.color   = color;
       content.owner   = owner;
-      content.created = created;
+
       return content;
     }, unspents);
 
@@ -96,9 +97,16 @@ const propSelector = (movies) => map((movie) => {
   });
 }, movies);
 
-const sortMovies = sort((a,b) => b - a);
+const sortMovies = sort((a,b) => b.created - a.created);
 
-const createUiModel = compose(sortMovies, propSelector);
+const haveCreatedProp = movie => {
+  if(movie.created) console.log(movie.title, movie.created);
+  return movie.created;
+};
+
+const filterMovies = filter(haveCreatedProp)
+
+const createUiModel = compose(sortMovies, filterMovies, propSelector);
 
 const getSiblings = (elem) => {
   var siblings = [];
