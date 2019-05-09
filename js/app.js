@@ -99,13 +99,6 @@ const propSelector = (movies) => map((movie) => {
 
 const sortMovies = sort((a,b) => b.created - a.created);
 
-1557230241
-1557317963
-1557317093
-1557229970286
-1557319732
-
-
 const haveCreatedProp = movie => {
   if(movie.created) console.log(movie.title, movie.created);
   return movie.created && movie.created !== 1557229970286;
