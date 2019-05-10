@@ -37,6 +37,13 @@
       <input type="hidden" name="video_poster"  :value="popup.video.poster">
       <input type="hidden" name="video_owner"   :value="popup.video.owner">
       <input type="hidden" name="video_tokenid" :value="popup.video.tokenid">
+
+      <input type="hidden" name="video_year" :value="popup.video.year">
+      <input type="hidden" name="video_producer" :value="popup.video.producer">
+      <input type="hidden" name="video_cast" :value="popup.video.cast">
+      <input type="hidden" name="video_director" :value="popup.video.director">
+      <input type="hidden" name="video_rightholder" :value="popup.video.rightholder.name">
+
 		</div>
 		<div v-if="!existPluginVal">
 			<p class="main-headline">K5 Partner Streaming Site plugin not detected!</p>

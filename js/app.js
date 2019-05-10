@@ -11,7 +11,6 @@ const getVideos = curry(async (provider) => {
     const unspents = await provider.send('plasma_unspent', ['', 49154]);
     console.log(unspents);
 
-
     const tasks = await map(async(raw) => {
       const unencodedIpfsHash   = raw.output.data;
       const cid                 = Base58.encode(convertToUint8Array(unencodedIpfsHash));
@@ -93,15 +92,20 @@ const propSelector = (movies) => map((movie) => {
     title: movie.name,
     video: movie.movie.mp4,
     poster: movie.image,
-    created: movie.created
+    created: movie.created,
+    rightholder: movie.rightholder,
+    year: movie.year,
+    cast: movie.cast,
+    director: movie.director,
+    producer: movie.producer
   });
 }, movies);
 
 const sortMovies = sort((a,b) => b.created - a.created);
 
 const haveCreatedProp = movie => {
-  if(movie.created) console.log(movie.title, movie.created);
-  return movie.created && movie.created !== 1557229970286;
+  if(movie.created && movie.rightholder && movie.year && movie.cast && movie.director && movie.director && movie.created !== 1557229970286) console.log(movie.title, movie.created);
+  return movie.created && movie.rightholder && movie.year && movie.cast && movie.director && movie.director && movie.created !== 1557229970286;
 };
 
 const filterMovies = filter(haveCreatedProp)
@@ -124,8 +128,8 @@ Vue.directive('init-video', {
   bind: function(item) {
     const onPlay = (item) => {
       const siblings = getSiblings(item.target);
-      const [title, poster, owner, tokenId] = siblings;
-      window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId }}));
+      const [title, poster, owner, tokenId, year, producer, cast, director, rightholder] = siblings;
+      window.dispatchEvent(new CustomEvent("wr-video-play", {detail: { title, poster, owner, tokenId, year, producer, cast, director, rightholder }}));
     };
 
     item.onplay = onPlay;
