@@ -72,6 +72,8 @@ header.main-header {
 header .logo {
     color: #fff;
     font-size: 40px;
+    display:inline-block;
+    margin: 0 auto;
 }
 header .logo:before {
 content: "\e904";
