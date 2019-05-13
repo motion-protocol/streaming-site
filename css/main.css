@@ -153,8 +153,7 @@ header .social-list a {
 .video-list-item img {
 	width: 100%;
 	height: 100%;
-	max-height: 386px;
-	min-height: 245px;
+    height: 300px;
 }
 .video-item-name {
 	text-align: center;
