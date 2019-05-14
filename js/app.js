@@ -84,12 +84,11 @@ const convertToUint8Array = (inputAsHexString) => {
   return Uint8Array.from(result)
 };
 
-
 const propSelector = (movies) => map((movie) => {
   return ({
     owner: movie.owner,
     tokenid: movie.tokenId,
-    title: movie.name,
+    title: movie.name === 'Next Goal Winsasda' ? 'Next Goal Wins' : movie.name,
     video: movie.movie.mp4,
     poster: movie.image,
     created: movie.created,
