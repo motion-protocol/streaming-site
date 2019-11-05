@@ -2,13 +2,13 @@ const {sort, map, curry, times, split, concat, compose, filter} = R;
 
 const RINKEBY_ADDRESS   = '0xbf972fD0b929563407C249CBB00e33B4C83d49c3';
 
-const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https://staging-testnet.leapdao.org/rpc');
+const getWeb3Provider = async () => new ethers.providers.JsonRpcProvider('https://testnet-node1.leapdao.org');
 
 const reflect = p => p.then(v => ({v, status: "fulfilled" }), e => ({e, status: "rejected" }));
 
 const getVideos = curry(async (provider) => {
   try {
-    const unspents = await provider.send('plasma_unspent', ['', 49154]);
+    const unspents = await provider.send('plasma_unspent', ['', 49156]);
     console.log(unspents);
 
     const tasks = await map(async(raw) => {
