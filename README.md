@@ -9,7 +9,7 @@
   <h3 align="center">K5 Streaming</h3>
 
   <p align="center">
-    <a href="https://k5-streaming.now.sh">View Demo</a>
+    <a href="http://streaming-site-demo.s3-website.eu-central-1.amazonaws.com/">View Demo</a>
   </p>
 </p>
 
@@ -19,19 +19,8 @@ ListView of minted NFTs(movies) on leapDAO
 ### Built With
 * [Vue.js](https://vuejs.org/)
 
-## Getting Started
-
-
-### Prerequisites
-* live-server or similar
-```sh
-npm i live-server -g
-```
-
 ### Deployment
-The site could more or less be deployed anyware, we are currently using Zeit because its easy and offers immutable deployments.
-
-[Zeit](https://zeit.co/download)
+The site is deployed as a static website to S3. We are currently using travis for continuous deployment. The site is automatically deployed whenever a new commit is pushed to the master branch.
 
 ## Things to know about
 * Dependencies fetched from CDN´s
@@ -41,4 +30,4 @@ The site could more or less be deployed anyware, we are currently using Zeit bec
 * Metadata is fetched in parallel ajax requests
 * Passes NTF data from the site to whiterabbit plugin
 * RINKEBY_ADDRESS 0xbf972fD0b929563407C249CBB00e33B4C83d49c3
-* Plasma URL https://staging-testnet.leapdao.org/rpc
+* Plasma URL https://testnet-node1.leapdao.org
