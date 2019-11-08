@@ -158,6 +158,9 @@ var app = new Vue({
     },
     methods: {
       getPopup: function (video) {
+        const motionTag = document.getElementById('motionTag');
+        motionTag.setAttribute('currentVideoAddress', video.owner);
+        motionTag.setAttribute('currentVideoTitle', video.title);
         console.log("video", video);
         this.existPlugin();
         this.popup.video = video;
@@ -166,6 +169,8 @@ var app = new Vue({
       },
       removePopup: function () {
         this.popup.on = false;
+        const motionTag = document.getElementById('motionTag');
+        motionTag.setAttribute('currentVideoAddress', null);
       },
       existPlugin: function () {
         console.log('whiterabbit plugin PING!');

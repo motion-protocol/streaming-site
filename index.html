@@ -10,6 +10,7 @@
   <link href='https://vjs.zencdn.net/7.4.1/video-js.css' rel='stylesheet'>
 </head>
 <body>
+<div id="motionTag" currentVideoAddress=null ></div>
 <div id="app">
 	<header class="main-header">
       <img class="logo" align="middle" width="20%" height="20%" src="images/logo.jpeg" alt="k5 logo">
@@ -19,7 +20,7 @@
 			<h1 class="main-headline">K5 Partner Streaming Site</h1>
 			<ul class="video-list">
 				<li v-for="video in videos" class="video-list-item">
-					<a href="javascript: void(0);" v-on:click="getPopup(video)">
+					<a href="javascript: void(0);" v-on:click="getPopup(video);">
 						<img :src="video.poster" alt="">
             <h4 class="video-item-name">{{video.title}}</h4>
 					</a>
